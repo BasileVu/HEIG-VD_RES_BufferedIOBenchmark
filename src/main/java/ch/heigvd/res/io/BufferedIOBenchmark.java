@@ -1,6 +1,6 @@
 package ch.heigvd.res.io;
 
-import ch.heigvd.res.io.util.Timer;
+import ch.heigvd.res.io.util.*;
 
 import java.io.*;
 import java.util.logging.Level;
@@ -22,29 +22,19 @@ import java.util.logging.Logger;
 public class BufferedIOBenchmark {
 
 	static final Logger LOG = Logger.getLogger(BufferedIOBenchmark.class.getName());
-    private final PrintWriter out;
-
-	/**
-	 * This enum is used to describe the 4 different strategies for doing the IOs
-	 */
-	public enum IOStrategy {
-		ByteByByteWithoutBufferedStream,
-		ByteByByteWithBufferedStream,
-		BlockByBlockWithoutBufferedStream,
-		BlockByBlockWithBufferedStream
-	};
+    private final FileRecorder fr;
 
 	final static String FILENAME_PREFIX = "test-data"; // we will write and read test files at this location
-    final static String CSV_FILENAME = "metrics.csv";
+    final static String CSV_FILENAME = "results.csv";
 	final static long NUMBER_OF_BYTES_TO_WRITE = 1024 * 1024 * 10; // we will write and read 10 MB files
 
     /**
-     * Writes the column names for the csv file.
-     * @param pw The PrintWriter used to write data in the csv file.
+     * Sets the FileRecorder used to write data to the CSV file.
+     * @param fr The FileRecorder used to write data to the CSV file.
      */
-    public BufferedIOBenchmark(PrintWriter pw) {
-        out = pw;
-        pw.println("operation,strategy,blockSize,fileSizeInBytes,durationInMs");
+    public BufferedIOBenchmark(FileRecorder fr) {
+		this.fr = fr;
+        fr.record(String.join(",", BufferedIOBenchmarkData.LABELS));
     }
 
 	/**
@@ -54,7 +44,6 @@ public class BufferedIOBenchmark {
 	 */
 	private void produceTestData(IOStrategy ioStrategy, long numberOfBytesToWrite, int blockSize) {
 		LOG.log(Level.INFO, "Generating test data ({0}, {1} bytes, block size: {2}...", new Object[]{ioStrategy, numberOfBytesToWrite, blockSize});
-        out.print("WRITE," + ioStrategy.toString() + "," + blockSize + "," + numberOfBytesToWrite);
 		Timer.start();
 
 		OutputStream os = null;
@@ -86,7 +75,7 @@ public class BufferedIOBenchmark {
 
         long timeTaken = Timer.takeTime();
 		LOG.log(Level.INFO, "  > Done in {0} ms.", timeTaken);
-		out.println("," + timeTaken);
+		fr.record(new BufferedIOBenchmarkData("WRITE", ioStrategy, blockSize, NUMBER_OF_BYTES_TO_WRITE, timeTaken));
 	}
 	
 	/**
@@ -133,7 +122,6 @@ public class BufferedIOBenchmark {
 	 */
 	private void consumeTestData(IOStrategy ioStrategy, int blockSize) {
 		LOG.log(Level.INFO, "Consuming test data ({0}, block size: {1}...", new Object[]{ioStrategy, blockSize});
-        out.print("READ," + ioStrategy.toString() + "," + blockSize);
 		Timer.start();
 
 		InputStream is = null;
@@ -165,7 +153,7 @@ public class BufferedIOBenchmark {
 
         long timeTaken = Timer.takeTime();
         LOG.log(Level.INFO, "  > Done in {0} ms.", timeTaken);
-        out.println("," + timeTaken);
+        fr.record(new BufferedIOBenchmarkData("READ", ioStrategy, blockSize, NUMBER_OF_BYTES_TO_WRITE, timeTaken));
 	}
 
 	/**
@@ -195,7 +183,6 @@ public class BufferedIOBenchmark {
 		}
 		
 		LOG.log(Level.INFO, "Number of bytes read: {0}", new Object[]{totalBytes});
-        out.print("," + totalBytes);
 	}
 
 	/**
@@ -204,8 +191,9 @@ public class BufferedIOBenchmark {
 	public static void main(String[] args) {
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s %n");
 
-        try (PrintWriter pw = new PrintWriter(CSV_FILENAME)) {
-            BufferedIOBenchmark bm = new BufferedIOBenchmark(pw);
+        // Using a try-with-resource allows the stream to always be closed at the end (same as try + close in finally)
+        try (PrintStream ps = new PrintStream(CSV_FILENAME)) {
+            BufferedIOBenchmark bm = new BufferedIOBenchmark(new FileRecorder(ps, new CsvSerializer()));
 
             LOG.log(Level.INFO, "");
             LOG.log(Level.INFO, "*** BENCHMARKING WRITE OPERATIONS (with BufferedStream)", Timer.takeTime());
@@ -242,4 +230,6 @@ public class BufferedIOBenchmark {
             LOG.log(Level.SEVERE, e.getMessage(), e);
         }
 	}
+
+
 }

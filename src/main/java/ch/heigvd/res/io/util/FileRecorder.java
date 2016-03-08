@@ -14,8 +14,8 @@ public class FileRecorder implements IRecorder {
 
     /**
      * Sets the PrintStream and Serializer used to write serialized IData in the file.
-     * @param printStream
-     * @param serializer
+     * @param printStream The printStream where the serialized IData will be written.
+     * @param serializer The serializer used to serialized the IData.
      */
     public FileRecorder(PrintStream printStream, ISerializer serializer) {
         this.printStream = printStream;

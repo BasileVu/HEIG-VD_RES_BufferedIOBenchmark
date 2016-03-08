@@ -4,6 +4,8 @@ import java.io.PrintStream;
 
 /**
  * Takes a PrintStream linked to a file and put serialized IData in it.
+ *
+ * @author Olivier Liechti, Basile Vu
  */
 public class FileRecorder implements IRecorder {
 

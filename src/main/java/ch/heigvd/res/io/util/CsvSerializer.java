@@ -4,6 +4,8 @@ import java.io.PrintStream;
 
 /**
  * Allows serialization of any IData to a CSV format and outputs it to a stream.
+ *
+ * @author Olivier Liechti, Basile Vu
  */
 public class CsvSerializer implements ISerializer {
 

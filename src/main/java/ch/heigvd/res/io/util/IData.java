@@ -2,6 +2,8 @@ package ch.heigvd.res.io.util;
 
 /**
  * Keeps track of the data generated during an experiment.
+ *
+ * @author Olivier Liechti, Basile Vu
  */
 public interface IData {
     /**

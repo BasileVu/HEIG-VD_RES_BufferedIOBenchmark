@@ -2,6 +2,8 @@ package ch.heigvd.res.io.util;
 
 /**
  * Records an IData object.
+ *
+ * @author Olivier Liechti, Basile Vu
  */
 public interface IRecorder {
     /**

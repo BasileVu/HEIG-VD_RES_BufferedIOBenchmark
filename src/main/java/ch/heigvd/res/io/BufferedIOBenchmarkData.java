@@ -7,6 +7,8 @@ import java.util.*;
 
 /**
  * Keeps track of the data generated during the BufferedIOBenchmark.
+ *
+ * @author Olivier Liechti, Basile Vu
  */
 public class BufferedIOBenchmarkData implements IData {
 
